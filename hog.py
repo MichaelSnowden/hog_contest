@@ -1,6 +1,26 @@
 """This is a minimal contest submission file. You may also submit the full
 hog.py from Project 1 as your contest entry.
 """
+import collections
+from random import randint
+from scipy.special import comb
+
+x5 = 1
+
+
+def make_fair_dice(sides):
+    """Return a die that returns 1 to SIDES with equal chance."""
+    assert type(sides) == int and sides >= 1, 'Illegal value for sides'
+
+    def dice():
+        return randint(1, sides)
+
+    return dice
+
+
+four_sided = make_fair_dice(4)
+six_sided = make_fair_dice(6)
+
 
 def get_primes():
     """
@@ -183,8 +203,6 @@ def hogtimus_prime(turn_score):
     return turn_score
 
 
-
-
 def score_tree(n, dice, opponent_score):
     """
 
@@ -266,12 +284,10 @@ def get_probability_normal_dice(p, n, s):
     """
     return 1 / s ** n * sum([(-1) ** k * ncr(n, k) * ncr(p - s * k - 1, n - 1) for k in range(0, int((p - n) / s) + 1)])
 
-def get_best_chances_dict(against=always_roll(5)):
+
+def get_best_chances_dict(against):
     global best_chances_dict
-    if against == final_strategy:
-        file_name = vs_former_final_strategy_file
-    else:
-        file_name = vs_always_5_file
+    file_name = get_file_name(against)
     if best_chances_dict is None:
         with open(file_name, "r") as file:
             lines = file.readlines()
@@ -320,7 +336,12 @@ def throws(f, *args):
     return False
 
 
-def get_best_move(score, opponent_score, against=always_roll(5)):
+def get_file_name(against):
+    if against == x5:
+        return "x5.txt"
+
+
+def get_best_move(score, opponent_score, against):
     """
 
     :param score:
@@ -340,10 +361,7 @@ def get_best_move(score, opponent_score, against=always_roll(5)):
         if outcome_chance > best_chance:
             best_n, best_chance = n, outcome_chance
 
-    if against == final_strategy:
-        file_name = vs_former_final_strategy_file
-    else:
-        file_name = vs_always_5_file
+    file_name = get_file_name(against)
     with open(file_name, "a") as file:
         get_best_chances_dict(against)[(score, opponent_score)] = (best_n, best_chance)
         file.write("%d,%d,%d,%f\n" % (score, opponent_score, best_n, best_chance))
@@ -382,41 +400,19 @@ def parse(line):
     return (int(line_split[0]), int(line_split[1])), (int(line_split[2]), float(line_split[3]))
 
 
-def final_strategy(score, opponent_score, against=always_roll(5)):
-    """Write a brief description of your final strategy.
-
-    """
-    # BEGIN Question 10
-
+def final_strategy(score, opponent_score, against=x5):
     return get_best_move(score, opponent_score, against)[0]
-    # END Question 10
-
-
-def test_final_strategy(score0, score1, num_samples):
-    """
-
-    :param score0:
-    :param score1:
-    :param num_samples:
-    :return:
-    >>> test_final_strategy(0, 0, 10000)
-    """
-    print('(%2d, %2d):' % (score0, score1),
-          average_win_rate(final_strategy, num_samples=num_samples, score0=score0, score1=score1))
 
 
 def generate_strategy():
     """
 
     :return:
-    >>> score = 99
-    >>> while score >= 0:
-    ...     opp = 99
-    ...     while opp >= 0:
-    ...         final_strategy(score, opp)
-    ...         opp -= 1
-    ...     score -= 1
     """
-
-def final_strategy(score, opponent_score):
-    return 5
+    score = 99
+    while score >= 0:
+        opp = 99
+        while opp >= 0:
+            final_strategy(score, opp)
+            opp -= 1
+        score -= 1
